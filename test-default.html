@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <meta charset="utf-8" />
+    <link href="mricode.pagination.css" rel="stylesheet" />
+    <script src="jquery-2.1.4.min.js"></script>
+    <script src="mricode.pagination.js"></script>
+</head>
+<body>
+    <div>
+        <div>
+            pageIndex <input id="pageIndex" type="text" name="name" value="0" />
+            pageSize <input id="pageSize" type="text" name="name" value="10" />
+            total <input id="total" type="text" name="name" value="216" />
+            <button id="btn_init" type="button">初始化</button>
+            <button id="btn_render" type="button">重新生成</button>
+            <button id="btn_destroy" type="button">销毁</button>
+            <button id="btn_isInited" type="button">是否初始化</button>
+        </div>
+    </div>
+    <div id="page" class="m-pagination"></div>
+    <div id="eventLog"></div>
+    <script>
+        btn_init.onclick = function () {
+            //if ($("#page").pagination()) {
+            //    $("#page").pagination('destroy');
+            //}
+            $("#page").pagination({
+                pageIndex: pageIndex.value,
+                pageSize: pageSize.value,
+                total: total.value,
+                debug: true,
+                showInfo: true,
+                showJump: true,
+                showPageSizes: true
+            });
+
+        }
+        btn_render.onclick = function () {
+            $("#page").pagination('setPageIndex', pageIndex.value);
+            $("#page").pagination('setPageSize', pageSize.value);
+            $("#page").pagination('render', total.value);
+        }
+        btn_destroy.onclick = function () {
+            $("#page").pagination('destroy');
+            alert('销毁：$("XXX").pagination("destroy")');
+        }
+        btn_isInited.onclick = function () {
+            var isInited = $("#page").pagination();
+            var text = '判断是否初始化：$("XXX").pagination() 返回Boolean \r当前：' + (isInited ? "已初始化" : "未初始化");
+            alert(text);
+        }
+
+        $("#page").on("pageClicked", function (event, data) {
+            $("#eventLog").append('EventName = pageClicked , pageIndex = ' + data.pageIndex + '<br />');
+        }).on('jumpClicked', function (event, data) {
+            $("#eventLog").append('EventName = jumpClicked , pageIndex = ' + data.pageIndex + '<br />');
+        }).on('pageSizeChanged', function (event, data) {
+            $("#eventLog").append('EventName = pageSizeChanged , pageSize = ' + data.pageSize + '<br />');
+        });
+    </script>
+</body>
+</html>
