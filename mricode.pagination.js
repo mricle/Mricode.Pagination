@@ -1,6 +1,7 @@
-/*!
+﻿/*!
  * Mricode Pagination Plugin
- * github: https://github.com/mricle/Mricode.Pagination
+ * Github: https://github.com/mricle/Mricode.Pagination
+ * Version: 1.3.1
  * 
  * Required jQuery
  * 
@@ -49,6 +50,9 @@
         this.$jump = $('<div class="m-pagination-jump"></div>');
         this.$info = $('<div class="m-pagination-info"></div>');
         this.options = $.extend(true, {}, defaultOption, $.fn.pagination.defaults, options);
+        if (options.pageSizeItems) {
+            this.options.pageSizeItems = options.pageSizeItems;
+        }
         this.total = this.options.total;
         this.currentUrl = this.options.remote.url;
         this.currentPageIndex = utility.convertInt(this.options.pageIndex);
@@ -78,7 +82,7 @@
             }
         },
         setRemoteUrl: function (url) {
-            if (option.url) {
+            if (url) {
                 this.currentUrl = url;
             }
         },
@@ -108,7 +112,7 @@
             //init size module
             var sizeHtml = $('<select data-page-btn="size"></select>');
             for (var i = 0; i < this.options.pageSizeItems.length; i++) {
-                sizeHtml.append('<option value="' + this.options.pageSizeItems[i] + '">' + this.options.pageSizeItems[i] + '</option>')
+                sizeHtml.append('<option value="' + this.options.pageSizeItems[i] + '" ' + (this.currentPageSize == this.options.pageSizeItems[i] ? "selected" : "") + ' >' + this.options.pageSizeItems[i] + '</option>')
             }
             sizeHtml.val(this.currentPageSize);
             this.$size.append(sizeHtml);
@@ -237,6 +241,7 @@
                 url: url,
                 dataType: 'json',
                 data: data,
+                cache: false,
                 contentType: 'application/Json',
                 beforeSend: function (XMLHttpRequest) {
                     if (typeof beforeSend === 'function') beforeSend.call(this, XMLHttpRequest);
