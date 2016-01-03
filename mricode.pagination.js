@@ -129,15 +129,41 @@
         initEvent: function () {
             this.$element
             .on('click', { page: this }, function (event) {
-                eventHandler.call(event.data.page, event);
-            })
-            .on('change', { page: this }, function (event) {
-                if ($(event.target).data('pageBtn') == 'jump') {
-                    if (!pagination.check.checkJumpPage(this.value, event.data.page.getLastPageNum()))
-                        this.value = null;
+                if ($(event.target).is('button')) {
+                    if ($(event.target).data('pageBtn') == 'jump') {
+                        var $input = event.data.page.$element.find('input[data-page-btn=jump]');
+                        if (!pagination.check.checkJumpPage($input.val(), event.data.page.getLastPageNum())) {
+                            $input.val('');
+                            return false;
+                        }
+                    }
+                    eventHandler.call(event.data.page, event);
+                } else {
+                    if ($(event.target).data('pageIndex') !== undefined)
+                        eventHandler.call(event.data.page, event);
+                }
+            }).on('change', { page: this }, function (event) {
+                var $this = $(event.target);
+                if ($this.data('pageBtn') == 'jump') {
+                    if (!pagination.check.checkJumpPage($this.val(), event.data.page.getLastPageNum())) {
+                        $this.val('');
+                    }
                     return false;
                 }
-                eventHandler.call(event.data.page, event);
+                if ($this.data('pageBtn') == 'size') {
+                    eventHandler.call(event.data.page, event);
+                }
+            }).on('keypress', {
+                page: this
+            }, function (event) {
+                if (event.keyCode == "13") {
+                    var $input = event.data.page.$element.find('input[data-page-btn=jump]')
+                    if (!pagination.check.checkJumpPage($input.val(), event.data.page.getLastPageNum())) {
+                        $input.val('');
+                        return false;
+                    }
+                    eventHandler.call(event.data.page, event);
+                }
             });
         },
 
@@ -169,7 +195,9 @@
             if (pageIndex != null) this.currentPageIndex = utility.convertInt(pageIndex);
             if (pageSize != null) this.currentPageSize = utility.convertInt(pageSize);
             this.doPagination();
-            this.$element.trigger(eventName, { pageIndex: this.currentPageIndex, pageSize: this.currentPageSize });
+            this.$element.trigger(eventName, {
+                pageIndex: this.currentPageIndex, pageSize: this.currentPageSize
+            });
             this.debug('pagination ' + eventName);
         },
         //生成分页
@@ -220,7 +248,7 @@
         if (event.type === 'click' && $target.data('pageIndex') !== undefined && !$target.parent().hasClass('active')) {
             that.onEvent(pagination.event.pageClicked, $target.data("pageIndex"), null);
         }
-        else if (event.type === 'click' && $target.data('pageBtn') === 'jump') {
+        else if ((event.type === 'click' || event.type === 'keypress') && $target.data('pageBtn') === 'jump') {
             var pageIndexStr = that.$jump.find('input').val();
             if (pagination.check.checkJumpPage(pageIndexStr, that.getLastPageNum())) {
                 that.onEvent(pagination.event.jumpClicked, pageIndexStr - 1, null);
