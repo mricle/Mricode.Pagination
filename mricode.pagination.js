@@ -216,8 +216,6 @@
                 }
 
                 this.$page.empty().append(pagination.core.renderPages(this.currentPageIndex, this.currentPageSize, this.total, this.options.pageBtnCount, option));
-                this.$info.text(pagination.core.renderInfo(this.currentPageIndex, this.currentPageSize, this.total, this.options.infoFormat, this.options.noInfoText));
-                if (this.options.showInfo) this.$info.show(); else this.$info.hide();
                 this.$page.show();
                 if (this.options.showPageSizes) this.$size.show();
                 if (this.options.showJump) this.$jump.show();
@@ -227,6 +225,8 @@
                 this.$size.empty().hide();
                 this.$jump.empty().hide();
             }
+            this.$info.text(pagination.core.renderInfo(this.currentPageIndex, this.currentPageSize, this.total, this.options.infoFormat, this.options.noInfoText));
+            if (this.options.showInfo) this.$info.show(); else this.$info.hide();
         },
         //销毁分页
         destroy: function () {
