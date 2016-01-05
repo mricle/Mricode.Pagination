@@ -1,7 +1,7 @@
 ﻿/*!
  * Mricode Pagination Plugin
  * Github: https://github.com/mricle/Mricode.Pagination
- * Version: 1.3.1
+ * Version: 1.3.2
  * 
  * Required jQuery
  * 
@@ -129,15 +129,41 @@
         initEvent: function () {
             this.$element
             .on('click', { page: this }, function (event) {
-                eventHandler.call(event.data.page, event);
-            })
-            .on('change', { page: this }, function (event) {
-                if ($(event.target).data('pageBtn') == 'jump') {
-                    if (!pagination.check.checkJumpPage(this.value, event.data.page.getLastPageNum()))
-                        this.value = null;
+                if ($(event.target).is('button')) {
+                    if ($(event.target).data('pageBtn') == 'jump') {
+                        var $input = event.data.page.$element.find('input[data-page-btn=jump]');
+                        if (!pagination.check.checkJumpPage($input.val(), event.data.page.getLastPageNum())) {
+                            $input.val('');
+                            return false;
+                        }
+                    }
+                    eventHandler.call(event.data.page, event);
+                } else {
+                    if ($(event.target).data('pageIndex') !== undefined)
+                        eventHandler.call(event.data.page, event);
+                }
+            }).on('change', { page: this }, function (event) {
+                var $this = $(event.target);
+                if ($this.data('pageBtn') == 'jump') {
+                    if (!pagination.check.checkJumpPage($this.val(), event.data.page.getLastPageNum())) {
+                        $this.val('');
+                    }
                     return false;
                 }
-                eventHandler.call(event.data.page, event);
+                if ($this.data('pageBtn') == 'size') {
+                    eventHandler.call(event.data.page, event);
+                }
+            }).on('keypress', {
+                page: this
+            }, function (event) {
+                if (event.keyCode == "13") {
+                    var $input = event.data.page.$element.find('input[data-page-btn=jump]')
+                    if (!pagination.check.checkJumpPage($input.val(), event.data.page.getLastPageNum())) {
+                        $input.val('');
+                        return false;
+                    }
+                    eventHandler.call(event.data.page, event);
+                }
             });
         },
 
@@ -169,7 +195,9 @@
             if (pageIndex != null) this.currentPageIndex = utility.convertInt(pageIndex);
             if (pageSize != null) this.currentPageSize = utility.convertInt(pageSize);
             this.doPagination();
-            this.$element.trigger(eventName, { pageIndex: this.currentPageIndex, pageSize: this.currentPageSize });
+            this.$element.trigger(eventName, {
+                pageIndex: this.currentPageIndex, pageSize: this.currentPageSize
+            });
             this.debug('pagination ' + eventName);
         },
         //生成分页
@@ -181,20 +209,23 @@
                 nextBtnText: this.options.nextBtnText,
                 lastBtnText: this.options.lastBtnText
             }
-            this.$page.empty().append(pagination.core.renderPages(this.currentPageIndex, this.currentPageSize, this.total, this.options.pageBtnCount, option));
-            this.$info.text(pagination.core.renderInfo(this.currentPageIndex, this.currentPageSize, this.total, this.options.infoFormat, this.options.noInfoText));
             var lastPageNum = this.getLastPageNum();
-            if (this.options.showInfo) this.$info.show();
-            else this.$info.hide();
             if (lastPageNum > 1) {
+                if (this.currentPageIndex > lastPageNum - 1) {
+                    this.currentPageIndex = lastPageNum - 1;
+                }
+
+                this.$page.empty().append(pagination.core.renderPages(this.currentPageIndex, this.currentPageSize, this.total, this.options.pageBtnCount, option));
+                this.$info.text(pagination.core.renderInfo(this.currentPageIndex, this.currentPageSize, this.total, this.options.infoFormat, this.options.noInfoText));
+                if (this.options.showInfo) this.$info.show(); else this.$info.hide();
                 this.$page.show();
                 if (this.options.showPageSizes) this.$size.show();
                 if (this.options.showJump) this.$jump.show();
             }
             else {
-                this.$page.hide();
-                this.$size.hide();
-                this.$jump.hide();
+                this.$page.empty().hide();
+                this.$size.empty().hide();
+                this.$jump.empty().hide();
             }
         },
         //销毁分页
@@ -217,7 +248,7 @@
         if (event.type === 'click' && $target.data('pageIndex') !== undefined && !$target.parent().hasClass('active')) {
             that.onEvent(pagination.event.pageClicked, $target.data("pageIndex"), null);
         }
-        else if (event.type === 'click' && $target.data('pageBtn') === 'jump') {
+        else if ((event.type === 'click' || event.type === 'keypress') && $target.data('pageBtn') === 'jump') {
             var pageIndexStr = that.$jump.find('input').val();
             if (pagination.check.checkJumpPage(pageIndexStr, that.getLastPageNum())) {
                 that.onEvent(pagination.event.jumpClicked, pageIndexStr - 1, null);
@@ -225,7 +256,12 @@
             that.$jump.find('input').val(null);
         }
         else if (event.type === 'change' && $target.data('pageBtn') === 'size') {
-            that.onEvent(pagination.event.pageSizeChanged, null, that.$size.find('select').val());
+            var newPageSize = that.$size.find('select').val();
+            var lastPageNum = pagination.core.calLastPageNum(that.total, newPageSize);
+            if (that.currentPageIndex > lastPageNum - 1) {
+                that.currentPageIndex = lastPageNum - 1;
+            }
+            that.onEvent(pagination.event.pageSizeChanged, that.currentPageIndex, newPageSize);
         }
     };
 
@@ -264,7 +300,7 @@
         */
         renderPages: function (pageIndex, pageSize, total, pageBtnCount, options) {
             options = options || {};
-            pageIndex = pageIndex == undefined ? 1 : parseInt(pageIndex) + 1;      //set pageIndex from 1， convenient calculation page
+            //pageIndex = pageIndex == undefined ? 1 : parseInt(pageIndex) + 1;      //set pageIndex from 1， convenient calculation page
             var lastPageNumber = this.calLastPageNum(total, pageSize);
             var html = [];
 
@@ -329,7 +365,7 @@
             var html = [];
             for (var i = 0; i < count; i++) {
                 var page = this.renderPerPage(beginPageNum, beginPageNum - 1);
-                if (beginPageNum == currentPage)
+                if (beginPageNum == currentPage + 1)
                     page.addClass("active");
                 html.push(page);
                 beginPageNum++;
