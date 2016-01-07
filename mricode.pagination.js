@@ -1,7 +1,7 @@
 ﻿/*!
  * Mricode Pagination Plugin
  * Github: https://github.com/mricle/Mricode.Pagination
- * Version: 1.3.2
+ * Version: 1.3.3
  * 
  * Required jQuery
  * 
@@ -319,8 +319,8 @@
                 var frontBtnNum = (pageBtnCount + 1) / 2;
                 var behindBtnNum = lastPageNumber - ((pageBtnCount + 1) / 2);
 
-                var prevPage = this.renderPerPage(options.prevBtnText, pageIndex - 2);
-                var nextPage = this.renderPerPage(options.nextBtnText, pageIndex);
+                var prevPage = this.renderPerPage(options.prevBtnText, pageIndex - 1);
+                var nextPage = this.renderPerPage(options.nextBtnText, pageIndex + 1);
 
                 symmetryBtnCount = symmetryBtnCount.toString().indexOf('.') == -1 ? symmetryBtnCount : symmetryBtnCount + 0.5;
                 frontBtnNum = frontBtnNum.toString().indexOf('.') == -1 ? frontBtnNum : frontBtnNum + 0.5;
