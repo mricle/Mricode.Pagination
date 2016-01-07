@@ -300,12 +300,12 @@
         */
         renderPages: function (pageIndex, pageSize, total, pageBtnCount, options) {
             options = options || {};
-            //pageIndex = pageIndex == undefined ? 1 : parseInt(pageIndex) + 1;      //set pageIndex from 1， convenient calculation page
+            var pageNumber = pageIndex + 1;
             var lastPageNumber = this.calLastPageNum(total, pageSize);
             var html = [];
 
             if (lastPageNumber <= pageBtnCount) {
-                html = this.renderGroupPages(1, lastPageNumber, pageIndex);
+                html = this.renderGroupPages(1, lastPageNumber, pageNumber);
             }
             else {
                 var firstPage = this.renderPerPage(options.firstBtnText || 1, 0);
@@ -325,35 +325,35 @@
                 symmetryBtnCount = symmetryBtnCount.toString().indexOf('.') == -1 ? symmetryBtnCount : symmetryBtnCount + 0.5;
                 frontBtnNum = frontBtnNum.toString().indexOf('.') == -1 ? frontBtnNum : frontBtnNum + 0.5;
                 behindBtnNum = behindBtnNum.toString().indexOf('.') == -1 ? behindBtnNum : behindBtnNum + 0.5;
-                if (pageIndex <= frontBtnNum) {
+                if (pageNumber < frontBtnNum) {
                     if (options.showFirstLastBtn) {
-                        html = this.renderGroupPages(1, pageBtnCount - 2, pageIndex);
+                        html = this.renderGroupPages(1, pageBtnCount - 2, pageNumber);
                         html.push(nextPage);
                         html.push(lastPage);
                     } else {
-                        html = this.renderGroupPages(1, pageBtnCount - 1, pageIndex);
+                        html = this.renderGroupPages(1, pageBtnCount - 1, pageNumber);
                         html.push(nextPage);
                     }
                 }
-                else if (pageIndex > behindBtnNum) {
+                else if (pageNumber > behindBtnNum) {
                     if (options.showFirstLastBtn) {
-                        html = this.renderGroupPages(lastPageNumber - pageBtnCount + 3, pageBtnCount - 2, pageIndex);
+                        html = this.renderGroupPages(lastPageNumber - pageBtnCount + 3, pageBtnCount - 2, pageNumber);
                         html.unshift(prevPage);
                         html.unshift(firstPage);
                     } else {
-                        html = this.renderGroupPages(lastPageNumber - pageBtnCount + 2, pageBtnCount - 1, pageIndex);
+                        html = this.renderGroupPages(lastPageNumber - pageBtnCount + 2, pageBtnCount - 1, pageNumber);
                         html.unshift(prevPage);
                     }
                 }
                 else {
                     if (options.showFirstLastBtn) {
-                        html = this.renderGroupPages(pageIndex - symmetryBtnCount, pageBtnCount - 4, pageIndex);
+                        html = this.renderGroupPages(pageNumber - symmetryBtnCount, pageBtnCount - 4, pageNumber);
                         html.unshift(prevPage);
                         html.push(nextPage);
                         html.unshift(firstPage);
                         html.push(lastPage);
                     } else {
-                        html = this.renderGroupPages(pageIndex - symmetryBtnCount, pageBtnCount - 2, pageIndex);
+                        html = this.renderGroupPages(pageNumber - symmetryBtnCount, pageBtnCount - 2, pageNumber);
                         html.unshift(prevPage);
                         html.push(nextPage);
                     }
@@ -365,7 +365,7 @@
             var html = [];
             for (var i = 0; i < count; i++) {
                 var page = this.renderPerPage(beginPageNum, beginPageNum - 1);
-                if (beginPageNum == currentPage + 1)
+                if (beginPageNum === currentPage)
                     page.addClass("active");
                 html.push(page);
                 beginPageNum++;
