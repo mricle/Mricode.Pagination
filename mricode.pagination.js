@@ -1,7 +1,7 @@
 ﻿/*!
  * Mricode Pagination Plugin
  * Github: https://github.com/mricle/Mricode.Pagination
- * Version: 1.3.3
+ * Version: 1.3.4.0
  * 
  * Required jQuery
  * 
@@ -27,6 +27,7 @@
             remote: {
                 url: null,
                 params: null,
+                pageParams: null,
                 success: null,
                 beforeSend: null,
                 complete: null,
@@ -175,9 +176,13 @@
             }
         },
         remote: function () {
-            this.currentParams[this.options.remote.pageIndexName] = this.currentPageIndex;
-            this.currentParams[this.options.remote.pageSizeName] = this.currentPageSize;
-
+            if (typeof this.options.remote.pageParams === 'function') {
+                var pageParams = this.options.remote.pageParams.call(this, { pageIndex: this.currentPageIndex, pageSize: this.currentPageSize });
+                this.currentParams = $.extend({}, this.currentParams, pageParams);
+            } else {
+                this.currentParams[this.options.remote.pageIndexName] = this.currentPageIndex;
+                this.currentParams[this.options.remote.pageSizeName] = this.currentPageSize;
+            }
             pagination.remote.getAjax(this, this.currentUrl, this.currentParams, this.ajaxCallBack, this.options.remote.beforeSend, this.options.remote.complete);
         },
 
