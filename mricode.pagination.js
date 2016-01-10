@@ -1,7 +1,7 @@
 ﻿/*!
  * Mricode Pagination Plugin
  * Github: https://github.com/mricle/Mricode.Pagination
- * Version: 1.3.4
+ * Version: 1.3.5-beta
  * 
  * Required jQuery
  * 
@@ -215,21 +215,10 @@
                 lastBtnText: this.options.lastBtnText
             }
             var lastPageNum = this.getLastPageNum();
-            if (lastPageNum > 1) {
-                if (this.currentPageIndex > lastPageNum - 1) {
-                    this.currentPageIndex = lastPageNum - 1;
-                }
-
-                this.$page.empty().append(pagination.core.renderPages(this.currentPageIndex, this.currentPageSize, this.total, this.options.pageBtnCount, option));
-                this.$page.show();
-                if (this.options.showPageSizes) this.$size.show();
-                if (this.options.showJump) this.$jump.show();
-            }
-            else {
-                this.$page.empty().hide();
-                this.$size.empty().hide();
-                this.$jump.empty().hide();
-            }
+            this.currentPageIndex = this.currentPageIndex > lastPageNum - 1 ? lastPageNum - 1 : this.currentPageIndex;
+            this.$page.empty().append(pagination.core.renderPages(this.currentPageIndex, this.currentPageSize, this.total, this.options.pageBtnCount, option)).show();
+            if (this.options.showPageSizes) this.$size.show();
+            if (this.options.showJump) this.$jump.show();
             this.$info.text(pagination.core.renderInfo(this.currentPageIndex, this.currentPageSize, this.total, this.options.infoFormat, this.options.noInfoText));
             if (this.options.showInfo) this.$info.show(); else this.$info.hide();
         },
