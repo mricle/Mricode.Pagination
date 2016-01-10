@@ -1,7 +1,7 @@
 ﻿/*!
  * Mricode Pagination Plugin
  * Github: https://github.com/mricle/Mricode.Pagination
- * Version: 1.3.5-beta
+ * Version: 1.3.5
  * 
  * Required jQuery
  * 
