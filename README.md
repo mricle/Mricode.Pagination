@@ -41,6 +41,8 @@ $("#page").pagination({
 ```
 
 remote默认配置
+
+注：pageIndexName和pageSizeName，将在之后版本中移除，请使用pageParams修改请求参数名称
 ```javascript
 remote: {
     url: null,                      //[String]:ajax请求地址
@@ -133,6 +135,22 @@ remote: {
 - Default: `true`
 
 是否加载第一页，页面第一次打开可设置不加载首页数据，首页数据是页面直接返回，之后点击分页按钮自动加载数据
+
+
+####pageElementSort
+- Type: `Array`
+- Default: `['$page', '$size', '$jump', '$info']`
+
+page元素排序
+
+'$page':分页按钮
+
+'$size':分页大小
+
+'$jump':跳转按钮
+
+'info':分页信息（1到20条, 共216条数据 ）
+
 
 ####showInfo
 - Type: `Boolean`
