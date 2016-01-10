@@ -36,6 +36,7 @@
                 totalName: 'total',
                 traditional: false
             },
+            pageElementSort: ['$page', '$size', '$jump', '$info'],
             showInfo: false,
             infoFormat: '{start} ~ {end} of {total} entires',
             noInfoText: '0 entires',
@@ -46,14 +47,13 @@
             debug: false
         }
         this.$element = $(element);
-        this.$page = $('<ul class="m-pagination-page"></ul>');
-        this.$size = $('<div class="m-pagination-size"></div>');
-        this.$jump = $('<div class="m-pagination-jump"></div>');
-        this.$info = $('<div class="m-pagination-info"></div>');
+        this.$page = $('<ul class="m-pagination-page"></ul>').hide();
+        this.$size = $('<div class="m-pagination-size"></div>').hide();
+        this.$jump = $('<div class="m-pagination-jump"></div>').hide();
+        this.$info = $('<div class="m-pagination-info"></div>').hide();
         this.options = $.extend(true, {}, defaultOption, $.fn.pagination.defaults, options);
-        if (options.pageSizeItems) {
-            this.options.pageSizeItems = options.pageSizeItems;
-        }
+        this.options.pageElementSort = options.pageElementSort || defaultOption.pageElementSort;
+        this.options.pageSizeItems = options.pageSizeItems || defaultOption.pageSizeItems;
         this.total = this.options.total;
         this.currentUrl = this.options.remote.url;
         this.currentPageIndex = utility.convertInt(this.options.pageIndex);
@@ -122,10 +122,9 @@
             var jumpHtml = '<div class="m-pagination-group"><input data-page-btn="jump" type="text"><button data-page-btn="jump" type="button">' + this.options.jumpBtnText + '</button></div>';
             this.$jump.append(jumpHtml);
 
-            this.$element.append(this.$page.hide());
-            this.$element.append(this.$size.hide());
-            this.$element.append(this.$jump.hide());
-            this.$element.append(this.$info.hide());
+            for (var i = 0; i < this.options.pageElementSort.length; i++) {
+                this.$element.append(this[this.options.pageElementSort[i]]);
+            }
         },
         initEvent: function () {
             this.$element
