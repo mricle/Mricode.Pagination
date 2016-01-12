@@ -1,7 +1,7 @@
 ﻿/*!
  * Mricode Pagination Plugin
  * Github: https://github.com/mricle/Mricode.Pagination
- * Version: 1.3.5
+ * Version: 1.3.6
  * 
  * Required jQuery
  * 
@@ -216,8 +216,8 @@
             var lastPageNum = this.getLastPageNum();
             this.currentPageIndex = this.currentPageIndex > lastPageNum - 1 ? lastPageNum - 1 : this.currentPageIndex;
             this.$page.empty().append(pagination.core.renderPages(this.currentPageIndex, this.currentPageSize, this.total, this.options.pageBtnCount, option)).show();
-            if (this.options.showPageSizes) this.$size.show();
-            if (this.options.showJump) this.$jump.show();
+            if (this.options.showPageSizes && lastPageNum !== 0) this.$size.show(); else this.$size.hide();
+            if (this.options.showJump && lastPageNum !== 0) this.$jump.show(); else this.$jump.hide();
             this.$info.text(pagination.core.renderInfo(this.currentPageIndex, this.currentPageSize, this.total, this.options.infoFormat, this.options.noInfoText));
             if (this.options.showInfo) this.$info.show(); else this.$info.hide();
         },
