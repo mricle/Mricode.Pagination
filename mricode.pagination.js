@@ -214,7 +214,7 @@
                 lastBtnText: this.options.lastBtnText
             }
             var lastPageNum = this.getLastPageNum();
-            this.currentPageIndex = this.currentPageIndex > lastPageNum - 1 ? lastPageNum - 1 : this.currentPageIndex;
+            this.currentPageIndex = lastPageNum > 0 && this.currentPageIndex > lastPageNum - 1 ? lastPageNum - 1 : this.currentPageIndex;
             this.$page.empty().append(pagination.core.renderPages(this.currentPageIndex, this.currentPageSize, this.total, this.options.pageBtnCount, option)).show();
             if (this.options.showPageSizes && lastPageNum !== 0) this.$size.show(); else this.$size.hide();
             if (this.options.showJump && lastPageNum !== 0) this.$jump.show(); else this.$jump.hide();
@@ -251,7 +251,7 @@
         else if (event.type === 'change' && $target.data('pageBtn') === 'size') {
             var newPageSize = that.$size.find('select').val();
             var lastPageNum = pagination.core.calLastPageNum(that.total, newPageSize);
-            if (that.currentPageIndex > lastPageNum - 1) {
+            if (lastPageNum > 0 && that.currentPageIndex > lastPageNum - 1) {
                 that.currentPageIndex = lastPageNum - 1;
             }
             that.onEvent(pagination.event.pageSizeChanged, that.currentPageIndex, newPageSize);
