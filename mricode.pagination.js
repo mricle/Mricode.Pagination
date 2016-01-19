@@ -1,7 +1,7 @@
 ﻿/*!
  * Mricode Pagination Plugin
  * Github: https://github.com/mricle/Mricode.Pagination
- * Version: 1.3.7
+ * Version: 1.3.8
  * 
  * Required jQuery
  * 
@@ -456,35 +456,33 @@
         }
     }
 
-    var initPagination = function (element, option, args) {
-        var $this = $(element);
-        var data = $this.data('pagination');
-        if (!data && typeof option === 'string') {
-            throw new Error('MricodePagination is uninitialized.');
-        }
-        else if (data && typeof option === 'object') {
-            throw new Error('MricodePagination is initialized.');
-        }
-            //初始化
-        else if (!data && typeof option === 'object') {
-            var options = typeof option == 'object' && option;
-            var data_api_options = $this.data();
-            options = $.extend(options, data_api_options);
-            $this.data('pagination', (data = new Page(element, options)));
-        }
-        else if (data && typeof option === 'string') {
-            data[option].apply(data, Array.prototype.slice.call(args, 1));
-        }
-    }
-
     $.fn.pagination = function (option) {
         if (typeof option === 'undefined') {
             return $(this).data('pagination') || false;
         } else {
+            var result;
             var args = arguments;
-            return this.each(function () {
-                initPagination(this, option, args);
+            this.each(function () {
+                var $this = $(this);
+                var data = $this.data('pagination');
+                if (!data && typeof option === 'string') {
+                    throw new Error('MricodePagination is uninitialized.');
+                }
+                else if (data && typeof option === 'object') {
+                    throw new Error('MricodePagination is initialized.');
+                }
+                    //初始化
+                else if (!data && typeof option === 'object') {
+                    var options = typeof option == 'object' && option;
+                    var data_api_options = $this.data();
+                    options = $.extend(options, data_api_options);
+                    $this.data('pagination', (data = new Page(this, options)));
+                }
+                else if (data && typeof option === 'string') {
+                    result = data[option].apply(data, Array.prototype.slice.call(args, 1));
+                }
             });
+            return typeof result === 'undefined' ? this : result;
         }
     }
 })(window.jQuery);
