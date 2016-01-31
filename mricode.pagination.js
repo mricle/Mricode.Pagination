@@ -149,12 +149,8 @@
                 if ($(event.target).is('button')) {
                     if ($(event.target).data('pageBtn') == 'jump') {
                         var $input = event.data.page.$element.find('input[data-page-btn=jump]');
-                        if (!pagination.check.checkJumpPage($input.val(), event.data.page.getLastPageNum())) {
-                            $input.val('');
-                            return false;
-                        }
+                        event.data.page.jumpEventHandler($input.val(), event);
                     }
-                    eventHandler.call(event.data.page, event);
                 } else {
                     if ($(event.target).data('pageIndex') !== undefined)
                         eventHandler.call(event.data.page, event);
@@ -162,26 +158,31 @@
             }).on('change', { page: this }, function (event) {
                 var $this = $(event.target);
                 if ($this.data('pageBtn') == 'jump') {
-                    if (!pagination.check.checkJumpPage($this.val(), event.data.page.getLastPageNum())) {
-                        $this.val('');
-                    }
-                    return false;
+                    event.data.page.jumpEventHandler($this.val(), event);
                 }
                 if ($this.data('pageBtn') == 'size') {
                     eventHandler.call(event.data.page, event);
                 }
-            }).on('keypress', {
-                page: this
-            }, function (event) {
+            }).on('keypress', { page: this }, function (event) {
                 if (event.keyCode == "13") {
                     var $input = event.data.page.$element.find('input[data-page-btn=jump]')
-                    if (!pagination.check.checkJumpPage($input.val(), event.data.page.getLastPageNum())) {
-                        $input.val('');
-                        return false;
-                    }
-                    eventHandler.call(event.data.page, event);
+                    event.data.page.jumpEventHandler($input.val(), event);
                 }
             });
+        },
+        jumpEventHandler: function (inputValue, event) {
+            if (!inputValue) {
+                this.$jump.removeClass('error');
+            } else if (!pagination.check.checkJumpPage(inputValue)) {
+                this.$jump.addClass('error');
+            }
+            else if (utility.convertInt(inputValue) > this.getLastPageNum()) {
+                this.$jump.addClass('error');
+            }
+            else {
+                this.$jump.removeClass('error');
+                eventHandler.call(this, event);
+            }
         },
 
         doPagination: function () {
@@ -260,10 +261,10 @@
         }
         else if ((event.type === 'click' || event.type === 'keypress') && $target.data('pageBtn') === 'jump') {
             var pageIndexStr = that.$jump.find('input').val();
-            if (pagination.check.checkJumpPage(pageIndexStr, that.getLastPageNum())) {
+            if (utility.convertInt(pageIndexStr) <= that.getLastPageNum()) {
                 that.onEvent(pagination.event.jumpClicked, pageIndexStr - 1, null);
+                that.$jump.find('input').val(null);
             }
-            that.$jump.find('input').val(null);
         }
         else if (event.type === 'change' && $target.data('pageBtn') === 'size') {
             var newPageSize = that.$size.find('select').val();
@@ -405,9 +406,9 @@
     };
     pagination.check = {
         //校验跳转页数有效性
-        checkJumpPage: function (pageIndex, maxPage) {
+        checkJumpPage: function (pageIndex) {
             var reg = /^\+?[1-9][0-9]*$/;
-            return reg.test(pageIndex) && utility.convertInt(pageIndex) <= utility.convertInt(maxPage);
+            return reg.test(pageIndex);
         }
     };
 
