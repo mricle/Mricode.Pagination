@@ -1,7 +1,7 @@
 ﻿/*!
  * Mricode Pagination Plugin
  * Github: https://github.com/mricle/Mricode.Pagination
- * Version: 1.3.8
+ * Version: 1.4.0
  * 
  * Required jQuery
  * 
@@ -9,7 +9,18 @@
  * Released under the MIT license
  */
 
-(function ($) {
+(function (factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD
+        define(['jquery'], factory);
+    } else if (typeof exports === 'object') {
+        // Node / CommonJS
+        factory(require('jquery'));
+    } else {
+        // Globals
+        factory(jQuery);
+    }
+})(function ($) {
     "use strict";
 
     var Page = function (element, options) {
@@ -71,6 +82,12 @@
     Page.prototype = {
         getPageIndex: function () {
             return this.currentPageIndex;
+        },
+        getPageSize: function () {
+            return this.currentPageSize;
+        },
+        getParams: function () {
+            return this.currentParams;
         },
         setPageIndex: function (pageIndex) {
             if (pageIndex !== undefined && pageIndex !== null) {
@@ -485,4 +502,4 @@
             return typeof result === 'undefined' ? this : result;
         }
     }
-})(window.jQuery);
+});
