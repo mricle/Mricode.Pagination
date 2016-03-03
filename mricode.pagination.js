@@ -64,7 +64,7 @@
         this.$info = $('<div class="m-pagination-info"></div>').hide();
         this.options = $.extend(true, {}, defaultOption, $.fn.pagination.defaults, options);
         this.options.pageElementSort = options.pageElementSort || defaultOption.pageElementSort;
-        this.options.pageSizeItems = options.pageSizeItems || defaultOption.pageSizeItems;
+        this.options.pageSizeItems = options.pageSizeItems || $.fn.pagination.defaults.pageSizeItems || defaultOption.pageSizeItems;
         this.total = this.options.total;
         this.currentUrl = this.options.remote.url;
         this.currentPageIndex = utility.convertInt(this.options.pageIndex);
