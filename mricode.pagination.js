@@ -1,7 +1,7 @@
 ﻿/*!
  * Mricode Pagination Plugin
  * Github: https://github.com/mricle/Mricode.Pagination
- * Version: 1.4.1
+ * Version: 1.4.2
  * 
  * Required jQuery
  * 
@@ -209,8 +209,14 @@
                 throw new Error("the response of totalName :  '" + this.options.remote.totalName + "'  not found.");
             total = utility.convertInt(total);
             this.total = total;
-            if (typeof this.options.remote.success === 'function') this.options.remote.success(result);
-            this.renderPagination();
+            var lastPageNum = this.getLastPageNum();
+            if (lastPageNum - 1 < this.currentPageIndex) {
+                this.setPageIndex(lastPageNum - 1);
+                this.remote();
+            } else {
+                if (typeof this.options.remote.success === 'function') this.options.remote.success(result);
+                this.renderPagination();
+            }
         },
 
         onEvent: function (eventName, pageIndex, pageSize) {
