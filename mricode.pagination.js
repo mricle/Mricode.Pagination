@@ -210,7 +210,7 @@
             total = utility.convertInt(total);
             this.total = total;
             var lastPageNum = this.getLastPageNum();
-            if (lastPageNum - 1 < this.currentPageIndex) {
+            if (this.currentPageIndex > 0 && lastPageNum - 1 < this.currentPageIndex) {
                 this.setPageIndex(lastPageNum - 1);
                 this.remote();
             } else {
