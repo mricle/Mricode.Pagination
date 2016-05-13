@@ -63,7 +63,16 @@
         this.$jump = $('<div class="m-pagination-jump"></div>').hide();
         this.$info = $('<div class="m-pagination-info"></div>').hide();
         this.options = $.extend(true, {}, defaultOption, $.fn.pagination.defaults, options);
-        this.options.pageElementSort = options.pageElementSort || ($.fn.pagination.defaults && $.fn.pagination.defaults.pageElementSort) ? $.fn.pagination.defaults.pageElementSort : defaultOption.pageElementSort;
+
+        if (options.pageElementSort) {
+            this.options.pageElementSort = options.pageElementSort
+        } else {
+            if ($.fn.pagination.defaults && $.fn.pagination.defaults.pageElementSort) {
+                this.options.pageElementSort = $.fn.pagination.defaults.pageElementSort;
+            } else {
+                this.options.pageElementSort = defaultOption.pageElementSort;
+            }
+        }
         this.options.pageSizeItems = options.pageSizeItems || ($.fn.pagination.defaults && $.fn.pagination.defaults.pageSizeItems) ? $.fn.pagination.defaults.pageSizeItems : defaultOption.pageSizeItems;
         this.total = this.options.total;
         this.currentUrl = this.options.remote.url;
