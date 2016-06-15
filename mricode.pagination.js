@@ -1,7 +1,7 @@
 ﻿/*!
  * Mricode Pagination Plugin
  * Github: https://github.com/mricle/Mricode.Pagination
- * Version: 1.4.2
+ * Version: 1.4.3
  * 
  * Required jQuery
  * 
@@ -209,7 +209,7 @@
                 this.currentParams[this.options.remote.pageIndexName] = this.currentPageIndex;
                 this.currentParams[this.options.remote.pageSizeName] = this.currentPageSize;
             }
-            pagination.remote.getAjax(this, this.currentUrl, this.currentParams, this.ajaxCallBack, this.options.remote.beforeSend, this.options.remote.complete);
+            pagination.remote.getAjax(this, this.currentUrl, this.currentParams, this.ajaxCallBack, this.options.remote.beforeSend, this.options.remote.complete,this.options.remote.traditional);
         },
 
         ajaxCallBack: function (result) {
@@ -298,12 +298,13 @@
         pageSizeChanged: 'pageSizeChanged'
     };
     pagination.remote = {
-        getAjax: function (pagination, url, data, success, beforeSend, complate) {
+        getAjax: function (pagination, url, data, success, beforeSend, complate,traditional) {
             $.ajax({
                 url: url,
                 dataType: 'json',
                 data: data,
                 cache: false,
+                traditional:traditional,
                 contentType: 'application/Json',
                 beforeSend: function (XMLHttpRequest) {
                     if (typeof beforeSend === 'function') beforeSend.call(this, XMLHttpRequest);
