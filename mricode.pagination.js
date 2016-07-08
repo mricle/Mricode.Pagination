@@ -73,7 +73,7 @@
                 this.options.pageElementSort = defaultOption.pageElementSort;
             }
         }
-        this.options.pageSizeItems = options.pageSizeItems || ($.fn.pagination.defaults && $.fn.pagination.defaults.pageSizeItems) ? $.fn.pagination.defaults.pageSizeItems : defaultOption.pageSizeItems;
+        this.options.pageSizeItems = options.pageSizeItems || (($.fn.pagination.defaults && $.fn.pagination.defaults.pageSizeItems) ? $.fn.pagination.defaults.pageSizeItems : defaultOption.pageSizeItems);
         this.total = this.options.total;
         this.currentUrl = this.options.remote.url;
         this.currentPageIndex = utility.convertInt(this.options.pageIndex);
