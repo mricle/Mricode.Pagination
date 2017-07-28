@@ -34,8 +34,12 @@
                 debug: true,
                 showInfo: true,
                 showJump: true,
+                showFirstLastBtn: true,
                 showPageSizes: true,
-                pageElementSort: ['$page', '$size', '$jump', '$info']
+                pageElementSort: ['$page', '$size', '$jump', '$info'],
+                initSuccess: function () {
+                    console.info('init success! run once!');
+                }
             });
 
         }
