@@ -196,7 +196,7 @@ page元素排序
 
 ####initSuccess
 - Type: `Function`
-- Default: `false`
+- Default: 略
 
 在插件初始化成功时调用，且仅调用一次
 
