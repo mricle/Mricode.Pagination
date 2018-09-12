@@ -178,6 +178,16 @@
                     event.data.page.jumpEventHandler($input.val(), event);
                 }
             });
+            
+            this.$element.find('input[data-page-btn=jump]').on('blur', {
+              page: this
+            }, function(event){
+              event.stopPropagation();
+              var pageIndex = $(this).val();
+              event.data.page.jumpEventHandler($(this).val(), event);
+              $(this).val(pageIndex)
+            })
+
         },
         jumpEventHandler: function (inputValue, event) {
             if (!inputValue) {
@@ -288,7 +298,14 @@
                 that.currentPageIndex = lastPageNum - 1;
             }
             that.onEvent(pagination.event.pageSizeChanged, that.currentPageIndex, newPageSize);
+        } else if (event.type === 'blur'){
+            var pageIndexStr = that.$jump.find('input').val();
+            if (utility.convertInt(pageIndexStr) <= that.getLastPageNum()) {
+              that.onEvent(pagination.event.jumpClicked, pageIndexStr - 1, null);
+              that.$jump.find('input').val(null);
+            }
         }
+
     };
 
     var pagination = {};
