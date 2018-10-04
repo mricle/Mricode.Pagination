@@ -41,21 +41,37 @@ $("#page").pagination({
 ```
 
 remote默认配置
+
+注：pageIndexName和pageSizeName，将在之后版本中移除，请使用pageParams修改请求参数名称
 ```javascript
 remote: {
     url: null,                      //[String]:ajax请求地址
     params: null,                   //[Object]:参数
+    pageParams: null,               //[Function]:自定义请求参数
     success: null,                  //[Function]:请求成功回调函数
     beforeSend: null,               //[Function]:请求之前回调函数（同jQuery）
     complete: null,                 //[Function]:请求完成回调函数（同jQuery）
-    pageIndexName: 'pageIndex',     //[String]:自定义请求参数的当前页名称
-    pageSizeName: 'pageSize',       //[String]:自定义请求参数的每页数量名称
+    pageIndexName: 'pageIndex',     //(已过时）[String]:自定义请求参数的当前页名称
+    pageSizeName: 'pageSize',       //(已过时）[String]:自定义请求参数的每页数量名称
     totalName: 'total',             //[String]:自定义返回的总页数名称，对象属性可写成'data.total'
     traditional: false              //[Boolean]:参数序列化方式（同jQuery）
 }
 
 ```
 
+自定义page请求参数（默认为pageIndex, pageSize）
+请求地址：www.google.com/search?index=0&size=10
+```javascript
+remote: {
+    url: 'www.google.com/search'
+    pageParams: function(data){
+        return {
+            index:data.pageIndex,
+            size:data.pageSize
+        };
+    }
+}
+```
 
 
 ##Options
@@ -119,6 +135,22 @@ remote: {
 - Default: `true`
 
 是否加载第一页，页面第一次打开可设置不加载首页数据，首页数据是页面直接返回，之后点击分页按钮自动加载数据
+
+
+####pageElementSort
+- Type: `Array`
+- Default: `['$page', '$size', '$jump', '$info']`
+
+page元素排序
+
+'$page':分页按钮
+
+'$size':分页大小
+
+'$jump':跳转按钮
+
+'info':分页信息（1到20条, 共216条数据 ）
+
 
 ####showInfo
 - Type: `Boolean`

@@ -1,15 +1,26 @@
 ﻿/*!
  * Mricode Pagination Plugin
  * Github: https://github.com/mricle/Mricode.Pagination
- * Version: 1.3.2
+ * Version: 1.4.4
  * 
  * Required jQuery
  * 
- * Copyright 2015 Mricle
+ * Copyright 2016 Mricle
  * Released under the MIT license
  */
 
-(function ($) {
+(function (factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD
+        define(['jquery'], factory);
+    } else if (typeof exports === 'object') {
+        // Node / CommonJS
+        factory(require('jquery'));
+    } else {
+        // Globals
+        factory(jQuery);
+    }
+})(function ($) {
     "use strict";
 
     var Page = function (element, options) {
@@ -27,6 +38,7 @@
             remote: {
                 url: null,
                 params: null,
+                pageParams: null,
                 success: null,
                 beforeSend: null,
                 complete: null,
@@ -35,6 +47,7 @@
                 totalName: 'total',
                 traditional: false
             },
+            pageElementSort: ['$page', '$size', '$jump', '$info'],
             showInfo: false,
             infoFormat: '{start} ~ {end} of {total} entires',
             noInfoText: '0 entires',
@@ -45,14 +58,22 @@
             debug: false
         }
         this.$element = $(element);
-        this.$page = $('<ul class="m-pagination-page"></ul>');
-        this.$size = $('<div class="m-pagination-size"></div>');
-        this.$jump = $('<div class="m-pagination-jump"></div>');
-        this.$info = $('<div class="m-pagination-info"></div>');
+        this.$page = $('<ul class="m-pagination-page"></ul>').hide();
+        this.$size = $('<div class="m-pagination-size"></div>').hide();
+        this.$jump = $('<div class="m-pagination-jump"></div>').hide();
+        this.$info = $('<div class="m-pagination-info"></div>').hide();
         this.options = $.extend(true, {}, defaultOption, $.fn.pagination.defaults, options);
-        if (options.pageSizeItems) {
-            this.options.pageSizeItems = options.pageSizeItems;
+
+        if (options.pageElementSort) {
+            this.options.pageElementSort = options.pageElementSort
+        } else {
+            if ($.fn.pagination.defaults && $.fn.pagination.defaults.pageElementSort) {
+                this.options.pageElementSort = $.fn.pagination.defaults.pageElementSort;
+            } else {
+                this.options.pageElementSort = defaultOption.pageElementSort;
+            }
         }
+        this.options.pageSizeItems = options.pageSizeItems || (($.fn.pagination.defaults && $.fn.pagination.defaults.pageSizeItems) ? $.fn.pagination.defaults.pageSizeItems : defaultOption.pageSizeItems);
         this.total = this.options.total;
         this.currentUrl = this.options.remote.url;
         this.currentPageIndex = utility.convertInt(this.options.pageIndex);
@@ -70,6 +91,12 @@
     Page.prototype = {
         getPageIndex: function () {
             return this.currentPageIndex;
+        },
+        getPageSize: function () {
+            return this.currentPageSize;
+        },
+        getParams: function () {
+            return this.currentParams;
         },
         setPageIndex: function (pageIndex) {
             if (pageIndex !== undefined && pageIndex !== null) {
@@ -121,10 +148,9 @@
             var jumpHtml = '<div class="m-pagination-group"><input data-page-btn="jump" type="text"><button data-page-btn="jump" type="button">' + this.options.jumpBtnText + '</button></div>';
             this.$jump.append(jumpHtml);
 
-            this.$element.append(this.$page.hide());
-            this.$element.append(this.$size.hide());
-            this.$element.append(this.$jump.hide());
-            this.$element.append(this.$info.hide());
+            for (var i = 0; i < this.options.pageElementSort.length; i++) {
+                this.$element.append(this[this.options.pageElementSort[i]]);
+            }
         },
         initEvent: function () {
             this.$element
@@ -132,12 +158,8 @@
                 if ($(event.target).is('button')) {
                     if ($(event.target).data('pageBtn') == 'jump') {
                         var $input = event.data.page.$element.find('input[data-page-btn=jump]');
-                        if (!pagination.check.checkJumpPage($input.val(), event.data.page.getLastPageNum())) {
-                            $input.val('');
-                            return false;
-                        }
+                        event.data.page.jumpEventHandler($input.val(), event);
                     }
-                    eventHandler.call(event.data.page, event);
                 } else {
                     if ($(event.target).data('pageIndex') !== undefined)
                         eventHandler.call(event.data.page, event);
@@ -145,26 +167,41 @@
             }).on('change', { page: this }, function (event) {
                 var $this = $(event.target);
                 if ($this.data('pageBtn') == 'jump') {
-                    if (!pagination.check.checkJumpPage($this.val(), event.data.page.getLastPageNum())) {
-                        $this.val('');
-                    }
-                    return false;
+                    event.data.page.jumpEventHandler($this.val(), event);
                 }
                 if ($this.data('pageBtn') == 'size') {
                     eventHandler.call(event.data.page, event);
                 }
-            }).on('keypress', {
-                page: this
-            }, function (event) {
+            }).on('keypress', { page: this }, function (event) {
                 if (event.keyCode == "13") {
                     var $input = event.data.page.$element.find('input[data-page-btn=jump]')
-                    if (!pagination.check.checkJumpPage($input.val(), event.data.page.getLastPageNum())) {
-                        $input.val('');
-                        return false;
-                    }
-                    eventHandler.call(event.data.page, event);
+                    event.data.page.jumpEventHandler($input.val(), event);
                 }
             });
+            
+            this.$element.find('input[data-page-btn=jump]').on('blur', {
+              page: this
+            }, function(event){
+              event.stopPropagation();
+              var pageIndex = $(this).val();
+              event.data.page.jumpEventHandler($(this).val(), event);
+              $(this).val(pageIndex)
+            })
+
+        },
+        jumpEventHandler: function (inputValue, event) {
+            if (!inputValue) {
+                this.$jump.removeClass('error');
+            } else if (!pagination.check.checkJumpPage(inputValue)) {
+                this.$jump.addClass('error');
+            }
+            else if (utility.convertInt(inputValue) > this.getLastPageNum()) {
+                this.$jump.addClass('error');
+            }
+            else {
+                this.$jump.removeClass('error');
+                eventHandler.call(this, event);
+            }
         },
 
         doPagination: function () {
@@ -175,10 +212,14 @@
             }
         },
         remote: function () {
-            this.currentParams[this.options.remote.pageIndexName] = this.currentPageIndex;
-            this.currentParams[this.options.remote.pageSizeName] = this.currentPageSize;
-
-            pagination.remote.getAjax(this, this.currentUrl, this.currentParams, this.ajaxCallBack, this.options.remote.beforeSend, this.options.remote.complete);
+            if (typeof this.options.remote.pageParams === 'function') {
+                var pageParams = this.options.remote.pageParams.call(this, { pageIndex: this.currentPageIndex, pageSize: this.currentPageSize });
+                this.currentParams = $.extend({}, this.currentParams, pageParams);
+            } else {
+                this.currentParams[this.options.remote.pageIndexName] = this.currentPageIndex;
+                this.currentParams[this.options.remote.pageSizeName] = this.currentPageSize;
+            }
+            pagination.remote.getAjax(this, this.currentUrl, this.currentParams, this.ajaxCallBack, this.options.remote.beforeSend, this.options.remote.complete,this.options.remote.traditional);
         },
 
         ajaxCallBack: function (result) {
@@ -187,8 +228,14 @@
                 throw new Error("the response of totalName :  '" + this.options.remote.totalName + "'  not found.");
             total = utility.convertInt(total);
             this.total = total;
-            if (typeof this.options.remote.success === 'function') this.options.remote.success(result);
-            this.renderPagination();
+            var lastPageNum = this.getLastPageNum();
+            if (this.currentPageIndex > 0 && lastPageNum - 1 < this.currentPageIndex) {
+                this.setPageIndex(lastPageNum - 1);
+                this.remote();
+            } else {
+                if (typeof this.options.remote.success === 'function') this.options.remote.success(result);
+                this.renderPagination();
+            }
         },
 
         onEvent: function (eventName, pageIndex, pageSize) {
@@ -210,21 +257,10 @@
                 lastBtnText: this.options.lastBtnText
             }
             var lastPageNum = this.getLastPageNum();
-            if (lastPageNum > 1) {
-                if (this.currentPageIndex > lastPageNum - 1) {
-                    this.currentPageIndex = lastPageNum - 1;
-                }
-
-                this.$page.empty().append(pagination.core.renderPages(this.currentPageIndex, this.currentPageSize, this.total, this.options.pageBtnCount, option));
-                this.$page.show();
-                if (this.options.showPageSizes) this.$size.show();
-                if (this.options.showJump) this.$jump.show();
-            }
-            else {
-                this.$page.empty().hide();
-                this.$size.empty().hide();
-                this.$jump.empty().hide();
-            }
+            this.currentPageIndex = lastPageNum > 0 && this.currentPageIndex > lastPageNum - 1 ? lastPageNum - 1 : this.currentPageIndex;
+            this.$page.empty().append(pagination.core.renderPages(this.currentPageIndex, this.currentPageSize, this.total, this.options.pageBtnCount, option)).show();
+            if (this.options.showPageSizes && lastPageNum !== 0) this.$size.show(); else this.$size.hide();
+            if (this.options.showJump && lastPageNum !== 0) this.$jump.show(); else this.$jump.hide();
             this.$info.text(pagination.core.renderInfo(this.currentPageIndex, this.currentPageSize, this.total, this.options.infoFormat, this.options.noInfoText));
             if (this.options.showInfo) this.$info.show(); else this.$info.hide();
         },
@@ -250,19 +286,26 @@
         }
         else if ((event.type === 'click' || event.type === 'keypress') && $target.data('pageBtn') === 'jump') {
             var pageIndexStr = that.$jump.find('input').val();
-            if (pagination.check.checkJumpPage(pageIndexStr, that.getLastPageNum())) {
+            if (utility.convertInt(pageIndexStr) <= that.getLastPageNum()) {
                 that.onEvent(pagination.event.jumpClicked, pageIndexStr - 1, null);
+                that.$jump.find('input').val(null);
             }
-            that.$jump.find('input').val(null);
         }
         else if (event.type === 'change' && $target.data('pageBtn') === 'size') {
             var newPageSize = that.$size.find('select').val();
             var lastPageNum = pagination.core.calLastPageNum(that.total, newPageSize);
-            if (that.currentPageIndex > lastPageNum - 1) {
+            if (lastPageNum > 0 && that.currentPageIndex > lastPageNum - 1) {
                 that.currentPageIndex = lastPageNum - 1;
             }
             that.onEvent(pagination.event.pageSizeChanged, that.currentPageIndex, newPageSize);
+        } else if (event.type === 'blur'){
+            var pageIndexStr = that.$jump.find('input').val();
+            if (utility.convertInt(pageIndexStr) <= that.getLastPageNum()) {
+              that.onEvent(pagination.event.jumpClicked, pageIndexStr - 1, null);
+              that.$jump.find('input').val(null);
+            }
         }
+
     };
 
     var pagination = {};
@@ -272,12 +315,13 @@
         pageSizeChanged: 'pageSizeChanged'
     };
     pagination.remote = {
-        getAjax: function (pagination, url, data, success, beforeSend, complate) {
+        getAjax: function (pagination, url, data, success, beforeSend, complate,traditional) {
             $.ajax({
                 url: url,
                 dataType: 'json',
                 data: data,
                 cache: false,
+                traditional:traditional,
                 contentType: 'application/Json',
                 beforeSend: function (XMLHttpRequest) {
                     if (typeof beforeSend === 'function') beforeSend.call(this, XMLHttpRequest);
@@ -300,12 +344,12 @@
         */
         renderPages: function (pageIndex, pageSize, total, pageBtnCount, options) {
             options = options || {};
-            //pageIndex = pageIndex == undefined ? 1 : parseInt(pageIndex) + 1;      //set pageIndex from 1， convenient calculation page
+            var pageNumber = pageIndex + 1;
             var lastPageNumber = this.calLastPageNum(total, pageSize);
             var html = [];
 
             if (lastPageNumber <= pageBtnCount) {
-                html = this.renderGroupPages(1, lastPageNumber, pageIndex);
+                html = this.renderGroupPages(1, lastPageNumber, pageNumber);
             }
             else {
                 var firstPage = this.renderPerPage(options.firstBtnText || 1, 0);
@@ -319,41 +363,41 @@
                 var frontBtnNum = (pageBtnCount + 1) / 2;
                 var behindBtnNum = lastPageNumber - ((pageBtnCount + 1) / 2);
 
-                var prevPage = this.renderPerPage(options.prevBtnText, pageIndex - 2);
-                var nextPage = this.renderPerPage(options.nextBtnText, pageIndex);
+                var prevPage = this.renderPerPage(options.prevBtnText, pageIndex - 1);
+                var nextPage = this.renderPerPage(options.nextBtnText, pageIndex + 1);
 
                 symmetryBtnCount = symmetryBtnCount.toString().indexOf('.') == -1 ? symmetryBtnCount : symmetryBtnCount + 0.5;
                 frontBtnNum = frontBtnNum.toString().indexOf('.') == -1 ? frontBtnNum : frontBtnNum + 0.5;
                 behindBtnNum = behindBtnNum.toString().indexOf('.') == -1 ? behindBtnNum : behindBtnNum + 0.5;
-                if (pageIndex <= frontBtnNum) {
+                if (pageNumber < frontBtnNum) {
                     if (options.showFirstLastBtn) {
-                        html = this.renderGroupPages(1, pageBtnCount - 2, pageIndex);
+                        html = this.renderGroupPages(1, pageBtnCount - 2, pageNumber);
                         html.push(nextPage);
                         html.push(lastPage);
                     } else {
-                        html = this.renderGroupPages(1, pageBtnCount - 1, pageIndex);
+                        html = this.renderGroupPages(1, pageBtnCount - 1, pageNumber);
                         html.push(nextPage);
                     }
                 }
-                else if (pageIndex > behindBtnNum) {
+                else if (pageNumber > behindBtnNum) {
                     if (options.showFirstLastBtn) {
-                        html = this.renderGroupPages(lastPageNumber - pageBtnCount + 3, pageBtnCount - 2, pageIndex);
+                        html = this.renderGroupPages(lastPageNumber - pageBtnCount + 3, pageBtnCount - 2, pageNumber);
                         html.unshift(prevPage);
                         html.unshift(firstPage);
                     } else {
-                        html = this.renderGroupPages(lastPageNumber - pageBtnCount + 2, pageBtnCount - 1, pageIndex);
+                        html = this.renderGroupPages(lastPageNumber - pageBtnCount + 2, pageBtnCount - 1, pageNumber);
                         html.unshift(prevPage);
                     }
                 }
                 else {
                     if (options.showFirstLastBtn) {
-                        html = this.renderGroupPages(pageIndex - symmetryBtnCount, pageBtnCount - 4, pageIndex);
+                        html = this.renderGroupPages(pageNumber - symmetryBtnCount, pageBtnCount - 4, pageNumber);
                         html.unshift(prevPage);
                         html.push(nextPage);
                         html.unshift(firstPage);
                         html.push(lastPage);
                     } else {
-                        html = this.renderGroupPages(pageIndex - symmetryBtnCount, pageBtnCount - 2, pageIndex);
+                        html = this.renderGroupPages(pageNumber - symmetryBtnCount, pageBtnCount - 2, pageNumber);
                         html.unshift(prevPage);
                         html.push(nextPage);
                     }
@@ -365,7 +409,7 @@
             var html = [];
             for (var i = 0; i < count; i++) {
                 var page = this.renderPerPage(beginPageNum, beginPageNum - 1);
-                if (beginPageNum == currentPage + 1)
+                if (beginPageNum === currentPage)
                     page.addClass("active");
                 html.push(page);
                 beginPageNum++;
@@ -395,9 +439,9 @@
     };
     pagination.check = {
         //校验跳转页数有效性
-        checkJumpPage: function (pageIndex, maxPage) {
+        checkJumpPage: function (pageIndex) {
             var reg = /^\+?[1-9][0-9]*$/;
-            return reg.test(pageIndex) && utility.convertInt(pageIndex) <= utility.convertInt(maxPage);
+            return reg.test(pageIndex);
         }
     };
 
@@ -463,35 +507,33 @@
         }
     }
 
-    var initPagination = function (element, option, args) {
-        var $this = $(element);
-        var data = $this.data('pagination');
-        if (!data && typeof option === 'string') {
-            throw new Error('MricodePagination is uninitialized.');
-        }
-        else if (data && typeof option === 'object') {
-            throw new Error('MricodePagination is initialized.');
-        }
-            //初始化
-        else if (!data && typeof option === 'object') {
-            var options = typeof option == 'object' && option;
-            var data_api_options = $this.data();
-            options = $.extend(options, data_api_options);
-            $this.data('pagination', (data = new Page(element, options)));
-        }
-        else if (data && typeof option === 'string') {
-            data[option].apply(data, Array.prototype.slice.call(args, 1));
-        }
-    }
-
     $.fn.pagination = function (option) {
         if (typeof option === 'undefined') {
             return $(this).data('pagination') || false;
         } else {
+            var result;
             var args = arguments;
-            return this.each(function () {
-                initPagination(this, option, args);
+            this.each(function () {
+                var $this = $(this);
+                var data = $this.data('pagination');
+                if (!data && typeof option === 'string') {
+                    throw new Error('MricodePagination is uninitialized.');
+                }
+                else if (data && typeof option === 'object') {
+                    throw new Error('MricodePagination is initialized.');
+                }
+                    //初始化
+                else if (!data && typeof option === 'object') {
+                    var options = typeof option == 'object' && option;
+                    var data_api_options = $this.data();
+                    options = $.extend(options, data_api_options);
+                    $this.data('pagination', (data = new Page(this, options)));
+                }
+                else if (data && typeof option === 'string') {
+                    result = data[option].apply(data, Array.prototype.slice.call(args, 1));
+                }
             });
+            return typeof result === 'undefined' ? this : result;
         }
     }
-})(window.jQuery);
+});
