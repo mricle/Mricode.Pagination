@@ -194,7 +194,11 @@ page元素排序
 
 配置可选每页数量
 
+####initSuccess
+- Type: `Function`
+- Default: 略
 
+在插件初始化成功时调用，且仅调用一次
 
 
 

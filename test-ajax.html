@@ -47,6 +47,9 @@
                     success: function (data) {
                         $("#eventLog").append(' remote callback : ' + JSON.stringify(data) + '<br />');
                     }
+                },
+                initSuccess: function () {
+                    console.info('init success! run once!');
                 }
             });
         }

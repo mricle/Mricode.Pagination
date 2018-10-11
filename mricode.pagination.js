@@ -35,6 +35,11 @@
             prevBtnText: "&laquo;",
             nextBtnText: "&raquo;",
             loadFirstPage: true,
+            initSuccess: function () {
+                if (this.debug && console) {
+                    console.info('init success! just run once!');
+                }
+            },
             remote: {
                 url: null,
                 params: null,
@@ -134,6 +139,7 @@
                 this.renderPagination();
             }
             this.debug('pagination inited');
+            this.options.initSuccess();
         },
         initHtml: function () {
             //init size module
