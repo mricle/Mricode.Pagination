@@ -107,7 +107,7 @@ ul {
     .m-pagination-size > select {
         cursor: pointer;
         height: 36px;
-        padding: 0px 8px;
+        padding: 0 0 0 8px;
         border-radius: 4px;
     }
 
